@@ -1,0 +1,11 @@
+[package]
+name = "shuffle"
+version = "0.1.0"
+authors = ["Bart Massey <bart@cs.pdx.edu>"]
+
+[dependencies]
+rand = "0.4"
+
+[lib]
+name = "shuffle"
+path = "shuffle.rs"
