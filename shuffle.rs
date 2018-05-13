@@ -1,14 +1,15 @@
 // Copyright © 2018 Bart Massey
 
-//! Iterator that produces the items of a `Vec` in shuffled
+//! Iterator that produces the items of a sequence in shuffled
 //! order.
 
 extern crate rand;
 use rand::Rng;
+use std::borrow::Borrow;
 
 /// Shuffle iterator state.
 pub struct ShuffleIter<'a, T: 'a> {
-    vec: &'a Vec<T>,
+    slice: &'a [T],
     posn: Vec<usize>,
     index: usize,
 }
@@ -16,11 +17,12 @@ pub struct ShuffleIter<'a, T: 'a> {
 impl <'a, T> ShuffleIter<'a, T> {
 
     /// Create a new shuffle iterator instance.
-    fn new(vec: &Vec<T>) -> ShuffleIter<T> {
-        let mut posn: Vec<usize> = (0..vec.len()).collect();
+    fn new<U>(slice: &'a U) -> ShuffleIter<'a, T> where U: Borrow<[T]> + 'a {
+        let slice = slice.borrow();
+        let mut posn: Vec<usize> = (0..slice.len()).collect();
         rand::thread_rng().shuffle(&mut posn);
         ShuffleIter {
-            vec,
+            slice,
             posn,
             index: 0,
         }
@@ -33,7 +35,7 @@ impl <'a, T> Iterator for ShuffleIter<'a, T> {
         if self.index >= self.posn.len() {
             return None;
         }
-        let result = &self.vec[self.posn[self.index]];
+        let result = &self.slice[self.posn[self.index]];
         self.index += 1;
         Some(result)
     }
@@ -47,13 +49,15 @@ pub trait Shuffle<T> {
     fn iter_shuffle(&self) -> ShuffleIter<T>;
 }
 
-impl <T> Shuffle<T> for Vec<T> {
+impl <T, U> Shuffle<T> for U where U: Borrow<[T]> {
     fn iter_shuffle(&self) -> ShuffleIter<T> {
-        ShuffleIter::new(&self)
+        ShuffleIter::new(self)
     }
 }
 
-// This test cheats by inspecting the iterator state,
+// Run a basic shuffle iterator and check that
+// postconditions are satisfied.
+// XXX This test cheats by inspecting the iterator state,
 // because otherwise testing becomes hard and expensive.
 #[test]
 fn basic_test() {
