@@ -5,7 +5,6 @@
 
 extern crate rand;
 use rand::Rng;
-use std::borrow::Borrow;
 
 /// Shuffle iterator state.
 pub struct ShuffleIter<'a, T: 'a> {
@@ -17,8 +16,8 @@ pub struct ShuffleIter<'a, T: 'a> {
 impl <'a, T> ShuffleIter<'a, T> {
 
     /// Create a new shuffle iterator instance.
-    fn new<U>(slice: &'a U) -> ShuffleIter<'a, T> where U: Borrow<[T]> + 'a {
-        let slice = slice.borrow();
+    fn new<U>(slice: &'a U) -> ShuffleIter<'a, T> where U: AsRef<[T]> + 'a {
+        let slice = slice.as_ref();
         let mut posn: Vec<usize> = (0..slice.len()).collect();
         rand::thread_rng().shuffle(&mut posn);
         ShuffleIter {
@@ -49,9 +48,24 @@ pub trait Shuffle<T> {
     fn iter_shuffle(&self) -> ShuffleIter<T>;
 }
 
-impl <T, U> Shuffle<T> for U where U: Borrow<[T]> {
+impl <T, U> Shuffle<T> for U where U: AsRef<[T]> {
     fn iter_shuffle(&self) -> ShuffleIter<T> {
         ShuffleIter::new(self)
+    }
+}
+
+// Run a basic shuffle iterator and check that
+// postconditions are satisfied.
+// XXX This test cheats by inspecting the iterator state,
+// because otherwise testing becomes hard and expensive.
+#[test]
+fn basic_test() {
+    let vec: Vec<usize> = (1..6).collect();
+    let shuffle = ShuffleIter::new(&vec);
+    assert_eq!(vec, (1..6).collect::<Vec<usize>>());
+    let posn = shuffle.posn.clone();
+    for (index, val) in shuffle.enumerate() {
+        assert_eq!(*val, vec[posn[index]]);
     }
 }
 
