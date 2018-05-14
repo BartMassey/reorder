@@ -29,6 +29,7 @@
 
 /// Iterator for returning references to elements of a sequence
 /// in a specified order, without disturbing the sequence.
+#[derive(Clone, Debug)]
 pub struct Reorder<'a, T: 'a> {
     slice: &'a [T],
     posn: &'a [usize],
