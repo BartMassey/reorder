@@ -4,14 +4,31 @@
 // distribution of this software for license terms.
 
 //! Iterator that produces references to the items of a
-//! sequence in some specified order.
-
-#[cfg(test)]
-extern crate rand;
+//! slice (or thing convertible from one) in some specified order.
+//!
+//! # Examples
+//!
+//! Produce the elements of a slice in shuffled order.
+//!
+//! ```
+//! # extern crate reorder;
+//! # use reorder::*;
+//! extern crate rand;
+//!
+//! # fn main() {
+//! use rand::Rng;
+//! let elems = ['a', 'b', 'c', 'd', 'e'];
+//! let mut posn: Vec<usize> = (0..elems.len()).collect();
+//! rand::thread_rng().shuffle(&mut posn);
+//! let shuffle = elems.iter_reorder(&posn);
+//! for (index, val) in shuffle.enumerate() {
+//!     assert_eq!(*val, elems[posn[index]]);
+//! }
+//! # }
+//! ```
 
 /// Iterator for returning references to elements of a sequence
-/// in a specified order, without disturbing the sequence. See
-/// the documentation at `Reorder::new()` for more details.
+/// in a specified order, without disturbing the sequence.
 pub struct Reorder<'a, T: 'a> {
     slice: &'a [T],
     posn: &'a [usize],
@@ -40,9 +57,7 @@ impl <'a, T> Reorder<'a, T> {
     /// check(&[0, 2], &[&'a', &'c']);
     /// check(&[1, 0, 1, 1], &[&'b', &'a', &'b', &'b']);
     /// ```
-    pub fn new<S, P>(slice: &'a S, posn: &'a P) -> Reorder<'a, T>
-        where S: AsRef<[T]> + 'a, P: AsRef<[usize]> + 'a
-    {
+    pub fn new(slice: &'a [T], posn: &'a [usize]) -> Reorder<'a, T> {
         let slice = slice.as_ref();
         let posn = posn.as_ref();
         Reorder {
@@ -71,30 +86,11 @@ pub trait IterReorder<T> {
     /// Return references to the elements of a collection in
     /// the specified order, without disturbing the
     /// collection.
-    fn iter_reorder<'a, P>(&'a self, posn: &'a P) -> Reorder<T>
-        where P: AsRef<[usize]> + 'a;
+    fn iter_reorder<'a>(&'a self, posn: &'a [usize]) -> Reorder<T>;
 }
 
-impl <T, S> IterReorder<T> for S
-    where S: AsRef<[T]>
-{
-    fn iter_reorder<'a, P>(&'a self, posn: &'a P) -> Reorder<T>
-        where P: AsRef<[usize]> + 'a
-    {
-        Reorder::new(self, posn)
-    }
-}
-
-// Run a basic shuffle iterator and check that
-// postconditions are satisfied.
-#[test]
-fn shuffle_test() {
-    use rand::Rng;
-    let elems = ['a', 'b', 'c', 'd', 'e'];
-    let mut posn: Vec<usize> = (0..elems.len()).collect();
-    rand::thread_rng().shuffle(&mut posn);
-    let shuffle = Reorder::new(&elems, &posn);
-    for (index, val) in shuffle.enumerate() {
-        assert_eq!(*val, elems[posn[index]]);
+impl <T, S: AsRef<[T]>> IterReorder<T> for S {
+    fn iter_reorder<'a>(&'a self, posn: &'a [usize]) -> Reorder<T> {
+        Reorder::new(self.as_ref(), posn)
     }
 }
