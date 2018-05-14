@@ -35,8 +35,7 @@ pub struct Reorder<'a, T: 'a> {
     index: usize,
 }
 
-impl <'a, T> Reorder<'a, T> {
-
+impl<'a, T> Reorder<'a, T> {
     /// Create a new reorder iterator instance. The reorder
     /// iterator will return references to the elements of
     /// the sequence `slice`, in the order specified by the
@@ -68,7 +67,7 @@ impl <'a, T> Reorder<'a, T> {
     }
 }
 
-impl <'a, T> Iterator for Reorder<'a, T> {
+impl<'a, T> Iterator for Reorder<'a, T> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         if self.index >= self.posn.len() {
@@ -89,7 +88,7 @@ pub trait IterReorder<T> {
     fn iter_reorder<'a>(&'a self, posn: &'a [usize]) -> Reorder<T>;
 }
 
-impl <T, S: AsRef<[T]>> IterReorder<T> for S {
+impl<T, S: AsRef<[T]>> IterReorder<T> for S {
     fn iter_reorder<'a>(&'a self, posn: &'a [usize]) -> Reorder<T> {
         Reorder::new(self.as_ref(), posn)
     }
