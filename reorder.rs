@@ -40,11 +40,15 @@ impl<'a, T> Reorder<'a, T> {
     /// Create a new reorder iterator instance. The reorder
     /// iterator will return references to the elements of
     /// the sequence `slice`, in the order specified by the
-    /// sequence `posn` of `usize` indices into
-    /// `slice`. This iterator will `panic` if an index is
-    /// out-of-bounds; any number of indices is allowed;
-    /// repeated and omitted indices are allowed.
+    /// sequence `posn` of `usize` indices into `slice`. Any
+    /// number of indices is allowed; repeated and omitted
+    /// indices are allowed.
     ///
+    /// # Panics
+    ///
+    /// This iterator panics with an index error if any
+    /// index is larger than the slice allows.
+    /// 
     /// # Examples
     ///
     /// ```
@@ -76,6 +80,12 @@ impl<'a, T> Iterator for Reorder<'a, T> {
         self.index += 1;
         Some(result)
     }
+}
+
+#[test]
+#[should_panic]
+fn index_error() {
+    let _ = Reorder::new(&['a'], &[1]).next();
 }
 
 /// Utility trait for being able to say
