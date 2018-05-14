@@ -57,8 +57,6 @@ impl<'a, T> Reorder<'a, T> {
     /// check(&[1, 0, 1, 1], &[&'b', &'a', &'b', &'b']);
     /// ```
     pub fn new(slice: &'a [T], posn: &'a [usize]) -> Reorder<'a, T> {
-        let slice = slice.as_ref();
-        let posn = posn.as_ref();
         Reorder {
             slice,
             posn,
