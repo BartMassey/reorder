@@ -11,9 +11,7 @@
 //! Produce the elements of a slice in shuffled order.
 //!
 //! ```
-//! # extern crate reorder;
 //! # use reorder::*;
-//! extern crate rand;
 //!
 //! # fn main() {
 //! use rand::Rng;
